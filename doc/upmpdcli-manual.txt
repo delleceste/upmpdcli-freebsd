@@ -1019,6 +1019,36 @@ The new connection method needs an initial user interaction:
   server, which will save them to a cached file and should then produce a success page in the
   browser. 
 
+Pay close attention to which upmpdcli process receives the browser redirect. The
+`qobuz-init-oauth.py` script only prints the URL. The token is saved by the already-running
+upmpdcli process when the browser redirects to `/qobuz/oauth/`.
+
+With the usual Linux system service, upmpdcli starts as root, drops privileges to the `upmpdcli`
+user, and uses `/var/cache/upmpdcli` unless `cachedir` is set in the configuration file. In this
+case the Qobuz token must end up in:
+
+----
+/var/cache/upmpdcli/qobuz/config
+----
+
+If you stop the service and run upmpdcli manually as your desktop user, for example `giacomo`, the
+token will instead be written under that user's home directory:
+
+----
+~/.cache/upmpdcli/qobuz/config
+----
+
+This can make the manual instance work while the real boot-time service still fails to log in. To
+avoid this, authenticate against the same instance which will normally run as the service, or set an
+explicit `cachedir` in `upmpdcli.conf` and use it consistently for both the temporary/manual instance
+and the service. If you already authenticated with a manual instance, copy the generated
+`qobuz/config` file into the service cache directory and make it readable and writable by the
+`upmpdcli` service user.
+
+Also check the URL choice printed by `qobuz-init-oauth.py`: if the browser runs on a different
+machine from upmpdcli, do not use the `localhost` URL, because this would redirect the browser to
+the browser machine itself instead of to the upmpdcli host.
+
 This operation is only performed once, or at least very rarely.
 
 Additional configuration parameters are described in the <<qobuzuser,configuration section>>
@@ -1272,8 +1302,20 @@ There is no need for upmpdcli to be started by root, it can run as any user. In 
 will create its cache files in user home directory normal cache location ($XDG_CACHE_HOME/upmpdcli
 or ~/.cache/upmpdcli).
 
-On systemd platforms, upmpdcli will usually be started through a unit files. This is usually taken
-care of by the package. There is a also an init file in the source tree.
+On systemd platforms, upmpdcli will usually be started through a unit file. This is usually taken
+care of by the package. There is also an init file in the source tree.
+
+On FreeBSD, the Meson installation installs an rc.d script as
+`/usr/local/etc/rc.d/upmpdcli` and the configuration files under `/usr/local/etc` when using the
+default `/usr/local` prefix. Both locations follow Meson's `prefix` and `sysconfdir` options. Enable
+automatic startup with:
+
+----
+sysrc upmpdcli_enable=YES
+----
+
+The default rc.d script uses the installed `upmpdcli.conf`; set `upmpdcli_config` in rc.conf if your
+configuration file is elsewhere.
 
 
 ////
@@ -1864,4 +1906,3 @@ display a reasonably self-explanatory interface.
 Recent *upmpdcli* packages install the web app as a service named
 *scweb*. The service is not started by default though, you need to edit
 `/etc/default/scweb`.
-

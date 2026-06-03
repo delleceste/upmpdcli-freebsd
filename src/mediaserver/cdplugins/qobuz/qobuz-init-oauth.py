@@ -43,6 +43,7 @@ def check_success():
 def perform_oauth_login(host, port):
     bundle = Bundle()
     app_id = str(bundle.get_app_id())
+    cachedir = getOptionValue("cachedir")
 
     oauth_url_base = (
         f"https://www.qobuz.com/signin/oauth"
@@ -53,6 +54,15 @@ def perform_oauth_login(host, port):
     oauth_url_net = oauth_url_base + f"&redirect_url=http://{host}:{port}/qobuz/oauth/"
 
     print("This script must run on the same machine as upmpdcli")
+    print("The Qobuz token will be saved by the running upmpdcli process, not by this script.")
+    if cachedir:
+        print(f"The configured service cache directory is: {os.path.join(cachedir, 'qobuz')}")
+    else:
+        print("With the normal system service, the token is saved under:")
+        print("/var/cache/upmpdcli/qobuz/config")
+        print("If upmpdcli is instead running as your login user, it is saved under:")
+        print("~/.cache/upmpdcli/qobuz/config")
+    print()
     print("Open one of the following URLs in your browser to authenticate with Qobuz:")
     print()
     print("- If upmpdcli and the script run on the same machine as the WEB browser, use:")
