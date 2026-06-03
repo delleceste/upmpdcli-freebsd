@@ -77,6 +77,11 @@ else
     : ${upmpdcli_pidfile:="/var/run/${name}.pid"}
 fi
 
+# Ensure /usr/local/bin is in PATH so that plugin subprocesses launched by
+# upmpdcli (Python scripts with #!/usr/bin/env python3) can find python3.
+# Services start with a minimal PATH that omits /usr/local/bin on FreeBSD.
+export PATH="/usr/local/bin:/usr/bin:/bin"
+
 # Use daemon(8) to daemonise upmpdcli and manage the PID file.
 # upmpdcli is invoked without -D so it runs in the foreground;
 # daemon(8) forks it into the background and writes the PID file,
