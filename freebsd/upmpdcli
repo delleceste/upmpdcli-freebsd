@@ -24,10 +24,6 @@
 # Quick reference for the most common non-default prefixes:
 #   Source install to /opt:   PREFIX=/opt
 #   Source install to /usr:   PREFIX=/usr  SYSCONFDIR=/etc
-#
-# After changing PREFIX, BINDIR or SYSCONFDIR here you only need to
-# update the three lines in the "Adjust here if prefix changes" block
-# below — the rest of the script derives every path from those variables.
 # ---------------------------------------------------------------------------
 
 PREFIX="/usr/local"
@@ -35,46 +31,28 @@ BINDIR="${PREFIX}/bin"
 SYSCONFDIR="${PREFIX}/etc"
 
 # ---------------------------------------------------------------------------
-# CONFIGURATION  —  /etc/rc.conf.d/upmpdcli
+# USER CONFIGURATION
 # ---------------------------------------------------------------------------
-# Create /etc/rc.conf.d/upmpdcli and paste one of the blocks below.
-# Settings there override any upmpdcli_* lines in /etc/rc.conf.
+# Edit the values below to match your setup, or override them in
+# /etc/rc.conf.d/upmpdcli (takes precedence over anything set here).
 #
-# --- Minimal: run as a normal login user ------------------------------------
+# upmpdcli_user   : Unix user that runs the daemon (empty = root)
+# upmpdcli_homedir: home directory of that user
+#                   When set, HOME is exported correctly (rc.subr uses
+#                   su -m which does not update HOME), and config/pidfile
+#                   paths are derived from it automatically:
+#                     config  : $homedir/.local/etc/upmpdcli.conf
+#                     pidfile : $homedir/.cache/upmpdcli/upmpdcli.pid
 #
-# upmpdcli_enable="YES"
-# upmpdcli_user="giacomo"
-# upmpdcli_homedir="/home/giacomo"
-#
-# The script derives the remaining paths from upmpdcli_homedir:
-#   config  : /home/giacomo/.local/etc/upmpdcli.conf
-#   pidfile : /home/giacomo/.cache/upmpdcli/upmpdcli.pid
-#   HOME    : /home/giacomo  (exported so upmpdcli finds its cache)
-#
-# --- Minimal: run as a dedicated service account ----------------------------
-#
-# Create the account first:
-#   pw useradd upmpdcli -d /var/cache/upmpdcli -m -s /usr/sbin/nologin
-#
-# upmpdcli_enable="YES"
-# upmpdcli_user="upmpdcli"
-# upmpdcli_homedir="/var/cache/upmpdcli"
-#
-# The script then uses:
-#   config  : /usr/local/etc/upmpdcli.conf
-#   pidfile : /var/run/upmpdcli.pid
-#
-# --- Full list of knobs (all optional, shown with their defaults) -----------
-#
-# upmpdcli_user=""          # Unix user; empty means root
-# upmpdcli_homedir=""       # home dir of upmpdcli_user; drives HOME and
-#                           # the default config/pidfile paths (see above)
-# upmpdcli_config=""        # override config path if the derived default
-#                           # does not suit your layout
-# upmpdcli_pidfile=""       # override pidfile path; must be writable by
-#                           # upmpdcli_user (/var/run is root-only)
-# upmpdcli_flags=""         # extra flags passed to upmpdcli, e.g. "-v"
+# Override individual paths only if the derived defaults don't suit you:
+# upmpdcli_config  : path to configuration file
+# upmpdcli_pidfile : path to PID file (must be writable by upmpdcli_user;
+#                    /var/run is not writable by non-root users)
+# upmpdcli_flags   : extra flags passed to upmpdcli, e.g. "-v"
 # ---------------------------------------------------------------------------
+
+upmpdcli_user="giacomo"
+upmpdcli_homedir="/home/giacomo"
 
 . /etc/rc.subr
 
